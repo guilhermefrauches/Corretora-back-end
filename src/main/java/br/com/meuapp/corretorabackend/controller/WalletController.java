@@ -1,0 +1,33 @@
+package br.com.meuapp.corretorabackend.controller;
+
+import br.com.meuapp.corretorabackend.dto.DepositRequest;
+import br.com.meuapp.corretorabackend.dto.WalletResponse;
+import br.com.meuapp.corretorabackend.service.WalletService;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("/api/wallet")
+@RequiredArgsConstructor
+public class WalletController {
+
+    private final WalletService walletService;
+
+    @GetMapping
+    public ResponseEntity<WalletResponse> getWallet(
+            @AuthenticationPrincipal UserDetails userDetails) {
+        return ResponseEntity.ok(walletService.getWallet(userDetails.getUsername()));
+    }
+
+    @PostMapping("/deposit")
+    public ResponseEntity<WalletResponse> deposit(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @Valid @RequestBody DepositRequest request) {
+        return ResponseEntity.ok(
+                walletService.deposit(userDetails.getUsername(), request));
+    }
+}
