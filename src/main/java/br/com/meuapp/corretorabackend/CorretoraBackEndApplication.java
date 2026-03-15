@@ -6,8 +6,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication
 public class CorretoraBackEndApplication {
 
-	public static void main(String[] args) {
-		SpringApplication.run(CorretoraBackEndApplication.class, args);
-	}
+    public static void main(String[] args) {
+        SpringApplication.run(CorretoraBackEndApplication.class, args);
+    }
 
 }
