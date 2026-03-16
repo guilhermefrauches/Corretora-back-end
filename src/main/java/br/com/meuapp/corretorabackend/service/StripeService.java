@@ -14,13 +14,14 @@ public class StripeService {
     @Value("${stripe.public-key}")
     private String publicKey;
 
-    public PaymentIntent createPaymentIntent(BigDecimal amount, String currency)
+    public PaymentIntent createPaymentIntent(BigDecimal amount, String currency, String email)
             throws StripeException {
 
         PaymentIntentCreateParams params = PaymentIntentCreateParams.builder()
                 .setAmount(amount.multiply(BigDecimal.valueOf(100)).longValue())
                 .setCurrency(currency)
                 .addPaymentMethodType("card")
+                .putMetadata("email", email)
                 .build();
 
         return PaymentIntent.create(params);

@@ -28,7 +28,8 @@ public class StripeController {
 
         PaymentIntent intent = stripeService.createPaymentIntent(
                 request.getAmount(),
-                request.getCurrency());
+                request.getCurrency(),
+                userDetails.getUsername());
 
         return ResponseEntity.ok(new PaymentIntentResponse(
                 intent.getClientSecret(),

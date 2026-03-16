@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Service
@@ -78,5 +79,22 @@ public class WalletService {
                 wallet.getCreatedAt(),
                 transactions
         );
+    }
+
+    @Transactional
+    public void creditFromStripe(String email, BigDecimal amount, String stripePaymentId) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+
+        Wallet wallet = getOrCreateWallet(user);
+        wallet.setBalance(wallet.getBalance().add(amount));
+        walletRepository.save(wallet);
+
+        WalletTransaction transaction = new WalletTransaction();
+        transaction.setWallet(wallet);
+        transaction.setType(WalletTransaction.TransactionType.DEPOSIT);
+        transaction.setAmount(amount);
+        transaction.setDescription("Depósito via Stripe - " + stripePaymentId);
+        transactionRepository.save(transaction);
     }
 }
