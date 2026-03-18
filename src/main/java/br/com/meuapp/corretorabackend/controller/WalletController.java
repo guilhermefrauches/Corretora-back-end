@@ -2,6 +2,7 @@ package br.com.meuapp.corretorabackend.controller;
 
 import br.com.meuapp.corretorabackend.dto.DepositRequest;
 import br.com.meuapp.corretorabackend.dto.WalletResponse;
+import br.com.meuapp.corretorabackend.dto.WithdrawRequest;
 import br.com.meuapp.corretorabackend.service.WalletService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -29,5 +30,13 @@ public class WalletController {
             @Valid @RequestBody DepositRequest request) {
         return ResponseEntity.ok(
                 walletService.deposit(userDetails.getUsername(), request));
+    }
+
+    @PostMapping("/withdraw")
+    public ResponseEntity<WalletResponse> withdraw(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @Valid @RequestBody WithdrawRequest request) {
+        return ResponseEntity.ok(
+                walletService.withdraw(userDetails.getUsername(), request));
     }
 }

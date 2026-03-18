@@ -2,6 +2,7 @@ package br.com.meuapp.corretorabackend.service;
 
 import br.com.meuapp.corretorabackend.dto.DepositRequest;
 import br.com.meuapp.corretorabackend.dto.WalletResponse;
+import br.com.meuapp.corretorabackend.dto.WithdrawRequest;
 import br.com.meuapp.corretorabackend.model.User;
 import br.com.meuapp.corretorabackend.model.Wallet;
 import br.com.meuapp.corretorabackend.model.WalletTransaction;
@@ -96,5 +97,30 @@ public class WalletService {
         transaction.setAmount(amount);
         transaction.setDescription("Depósito via Stripe - " + stripePaymentId);
         transactionRepository.save(transaction);
+    }
+
+    @Transactional
+    public WalletResponse withdraw(String email, WithdrawRequest request) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+
+        Wallet wallet = getOrCreateWallet(user);
+
+        if (wallet.getBalance().compareTo(request.getAmount()) < 0) {
+            throw new RuntimeException("Saldo insuficiente");
+        }
+
+        wallet.setBalance(wallet.getBalance().subtract(request.getAmount()));
+        walletRepository.save(wallet);
+
+        WalletTransaction transaction = new WalletTransaction();
+        transaction.setWallet(wallet);
+        transaction.setType(WalletTransaction.TransactionType.WITHDRAW);
+        transaction.setAmount(request.getAmount());
+        transaction.setDescription(request.getDescription() != null
+                ? request.getDescription() : "Saque");
+        transactionRepository.save(transaction);
+
+        return buildResponse(wallet);
     }
 }
