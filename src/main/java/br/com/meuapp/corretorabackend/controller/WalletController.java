@@ -1,5 +1,6 @@
 package br.com.meuapp.corretorabackend.controller;
 
+import br.com.meuapp.corretorabackend.dto.ConfirmDepositRequest;
 import br.com.meuapp.corretorabackend.dto.DepositRequest;
 import br.com.meuapp.corretorabackend.dto.WalletResponse;
 import br.com.meuapp.corretorabackend.dto.WithdrawRequest;
@@ -38,5 +39,13 @@ public class WalletController {
             @Valid @RequestBody WithdrawRequest request) {
         return ResponseEntity.ok(
                 walletService.withdraw(userDetails.getUsername(), request));
+    }
+
+    @PostMapping("/confirm-deposit")
+    public ResponseEntity<WalletResponse> confirmDeposit(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @Valid @RequestBody ConfirmDepositRequest request) {
+        return ResponseEntity.ok(
+                walletService.confirmDeposit(userDetails.getUsername(), request));
     }
 }

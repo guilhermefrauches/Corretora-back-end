@@ -30,6 +30,9 @@ public class WalletTransaction {
 
     private String description;
 
+    @Column(name = "stripe_payment_id")
+    private String stripePaymentId;
+
     @Column(name = "created_at")
     private LocalDateTime createdAt = LocalDateTime.now();
 

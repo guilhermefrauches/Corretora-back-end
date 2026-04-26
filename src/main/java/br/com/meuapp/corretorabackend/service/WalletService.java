@@ -1,5 +1,6 @@
 package br.com.meuapp.corretorabackend.service;
 
+import br.com.meuapp.corretorabackend.dto.ConfirmDepositRequest;
 import br.com.meuapp.corretorabackend.dto.DepositRequest;
 import br.com.meuapp.corretorabackend.dto.WalletResponse;
 import br.com.meuapp.corretorabackend.dto.WithdrawRequest;
@@ -9,9 +10,13 @@ import br.com.meuapp.corretorabackend.model.WalletTransaction;
 import br.com.meuapp.corretorabackend.repository.UserRepository;
 import br.com.meuapp.corretorabackend.repository.WalletRepository;
 import br.com.meuapp.corretorabackend.repository.WalletTransactionRepository;
+import com.stripe.exception.StripeException;
+import com.stripe.model.PaymentIntent;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -84,6 +89,10 @@ public class WalletService {
 
     @Transactional
     public void creditFromStripe(String email, BigDecimal amount, String stripePaymentId) {
+        if (transactionRepository.existsByStripePaymentId(stripePaymentId)) {
+            return;
+        }
+
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
 
@@ -96,7 +105,51 @@ public class WalletService {
         transaction.setType(WalletTransaction.TransactionType.DEPOSIT);
         transaction.setAmount(amount);
         transaction.setDescription("Depósito via Stripe - " + stripePaymentId);
+        transaction.setStripePaymentId(stripePaymentId);
         transactionRepository.save(transaction);
+    }
+
+    @Transactional
+    public WalletResponse confirmDeposit(String email, ConfirmDepositRequest request) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+
+        PaymentIntent intent;
+        try {
+            intent = PaymentIntent.retrieve(request.getPaymentIntentId());
+        } catch (StripeException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "PaymentIntent inválido: " + e.getMessage());
+        }
+
+        if (!"succeeded".equals(intent.getStatus())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Pagamento não confirmado. Status: " + intent.getStatus());
+        }
+
+        String emailNoMetadata = intent.getMetadata().get("email");
+        if (!email.equals(emailNoMetadata)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                    "PaymentIntent não pertence ao usuário autenticado");
+        }
+
+        if (transactionRepository.existsByStripePaymentId(intent.getId())) {
+            return buildResponse(getOrCreateWallet(user));
+        }
+
+        BigDecimal amount = BigDecimal.valueOf(intent.getAmount()).divide(BigDecimal.valueOf(100));
+        Wallet wallet = getOrCreateWallet(user);
+        wallet.setBalance(wallet.getBalance().add(amount));
+        walletRepository.save(wallet);
+
+        WalletTransaction transaction = new WalletTransaction();
+        transaction.setWallet(wallet);
+        transaction.setType(WalletTransaction.TransactionType.DEPOSIT);
+        transaction.setAmount(amount);
+        transaction.setDescription("Depósito via Stripe - " + intent.getId());
+        transaction.setStripePaymentId(intent.getId());
+        transactionRepository.save(transaction);
+
+        return buildResponse(wallet);
     }
 
     @Transactional
