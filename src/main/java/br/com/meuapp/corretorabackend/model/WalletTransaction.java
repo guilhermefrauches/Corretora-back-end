@@ -38,6 +38,8 @@ public class WalletTransaction {
 
     public enum TransactionType {
         DEPOSIT,
-        WITHDRAW
+        WITHDRAW,
+        BUY,
+        SELL
     }
 }

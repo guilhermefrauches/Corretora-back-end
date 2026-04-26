@@ -153,6 +153,34 @@ public class WalletService {
     }
 
     @Transactional
+    public void debitForTrade(User user, BigDecimal amount, String description) {
+        Wallet wallet = getOrCreateWallet(user);
+        wallet.setBalance(wallet.getBalance().subtract(amount));
+        walletRepository.save(wallet);
+
+        WalletTransaction transaction = new WalletTransaction();
+        transaction.setWallet(wallet);
+        transaction.setType(WalletTransaction.TransactionType.BUY);
+        transaction.setAmount(amount);
+        transaction.setDescription(description);
+        transactionRepository.save(transaction);
+    }
+
+    @Transactional
+    public void creditForTrade(User user, BigDecimal amount, String description) {
+        Wallet wallet = getOrCreateWallet(user);
+        wallet.setBalance(wallet.getBalance().add(amount));
+        walletRepository.save(wallet);
+
+        WalletTransaction transaction = new WalletTransaction();
+        transaction.setWallet(wallet);
+        transaction.setType(WalletTransaction.TransactionType.SELL);
+        transaction.setAmount(amount);
+        transaction.setDescription(description);
+        transactionRepository.save(transaction);
+    }
+
+    @Transactional
     public WalletResponse withdraw(String email, WithdrawRequest request) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuário não encontrado"));
