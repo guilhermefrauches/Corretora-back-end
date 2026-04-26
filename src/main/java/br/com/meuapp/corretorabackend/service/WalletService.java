@@ -41,7 +41,7 @@ public class WalletService {
     @Transactional
     public WalletResponse deposit(String email, DepositRequest request) {
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuário não encontrado"));
 
         Wallet wallet = getOrCreateWallet(user);
         wallet.setBalance(wallet.getBalance().add(request.getAmount()));
@@ -60,7 +60,7 @@ public class WalletService {
 
     public WalletResponse getWallet(String email) {
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuário não encontrado"));
 
         Wallet wallet = getOrCreateWallet(user);
         return buildResponse(wallet);
@@ -94,7 +94,7 @@ public class WalletService {
         }
 
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuário não encontrado"));
 
         Wallet wallet = getOrCreateWallet(user);
         wallet.setBalance(wallet.getBalance().add(amount));
@@ -112,7 +112,7 @@ public class WalletService {
     @Transactional
     public WalletResponse confirmDeposit(String email, ConfirmDepositRequest request) {
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuário não encontrado"));
 
         PaymentIntent intent;
         try {
@@ -155,12 +155,12 @@ public class WalletService {
     @Transactional
     public WalletResponse withdraw(String email, WithdrawRequest request) {
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuário não encontrado"));
 
         Wallet wallet = getOrCreateWallet(user);
 
         if (wallet.getBalance().compareTo(request.getAmount()) < 0) {
-            throw new RuntimeException("Saldo insuficiente");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Saldo insuficiente");
         }
 
         wallet.setBalance(wallet.getBalance().subtract(request.getAmount()));

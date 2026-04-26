@@ -21,6 +21,7 @@ public class AdminService {
         return userRepository.findAll()
                 .stream()
                 .map(user -> new AuthResponse(
+                        user.getId(),
                         null,
                         user.getName(),
                         user.getEmail(),
@@ -44,6 +45,7 @@ public class AdminService {
         userRepository.save(user);
 
         return new AuthResponse(
+                user.getId(),
                 null,
                 user.getName(),
                 user.getEmail(),
