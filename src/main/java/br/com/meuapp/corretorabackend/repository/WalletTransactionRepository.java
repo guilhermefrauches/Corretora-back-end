@@ -11,4 +11,6 @@ import java.util.List;
 public interface WalletTransactionRepository extends JpaRepository<WalletTransaction, Long> {
 
     List<WalletTransaction> findByWalletOrderByCreatedAtDesc(Wallet wallet);
+
+    boolean existsByStripePaymentId(String stripePaymentId);
 }
