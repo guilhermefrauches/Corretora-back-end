@@ -3,6 +3,7 @@ package br.com.meuapp.corretorabackend.controller;
 import br.com.meuapp.corretorabackend.dto.AuthResponse;
 import br.com.meuapp.corretorabackend.dto.LoginRequest;
 import br.com.meuapp.corretorabackend.dto.RegisterRequest;
+import br.com.meuapp.corretorabackend.dto.UpdateProfileRequest;
 import br.com.meuapp.corretorabackend.service.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -34,5 +35,12 @@ public class AuthController {
     public ResponseEntity<AuthResponse> me(
             @AuthenticationPrincipal UserDetails userDetails) {
         return ResponseEntity.ok(authService.me(userDetails.getUsername()));
+    }
+
+    @PutMapping("/me")
+    public ResponseEntity<AuthResponse> updateMe(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @RequestBody UpdateProfileRequest request) {
+        return ResponseEntity.ok(authService.updateMe(userDetails.getUsername(), request));
     }
 }

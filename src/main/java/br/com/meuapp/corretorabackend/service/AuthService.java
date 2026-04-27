@@ -3,6 +3,7 @@ package br.com.meuapp.corretorabackend.service;
 import br.com.meuapp.corretorabackend.dto.AuthResponse;
 import br.com.meuapp.corretorabackend.dto.LoginRequest;
 import br.com.meuapp.corretorabackend.dto.RegisterRequest;
+import br.com.meuapp.corretorabackend.dto.UpdateProfileRequest;
 import br.com.meuapp.corretorabackend.model.Role;
 import br.com.meuapp.corretorabackend.model.User;
 import br.com.meuapp.corretorabackend.repository.UserRepository;
@@ -40,6 +41,34 @@ public class AuthService {
         String token = jwtService.generateToken(user);
 
         return new AuthResponse(user.getId(), token, user.getName(), user.getEmail(), user.getRole().name());
+    }
+
+    public AuthResponse updateMe(String email, UpdateProfileRequest request) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuário não encontrado"));
+
+        if (request.getNewPassword() != null) {
+            if (request.getCurrentPassword() == null ||
+                    !passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Senha atual incorreta");
+            }
+            user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        }
+
+        if (request.getName() != null) {
+            user.setName(request.getName());
+        }
+
+        if (request.getEmail() != null && !request.getEmail().equals(user.getEmail())) {
+            if (userRepository.existsByEmail(request.getEmail())) {
+                throw new ResponseStatusException(HttpStatus.CONFLICT, "E-mail já cadastrado");
+            }
+            user.setEmail(request.getEmail());
+        }
+
+        userRepository.save(user);
+
+        return new AuthResponse(user.getId(), null, user.getName(), user.getEmail(), user.getRole().name());
     }
 
     public AuthResponse me(String email) {
