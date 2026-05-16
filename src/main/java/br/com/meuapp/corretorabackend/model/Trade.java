@@ -8,10 +8,10 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "positions")
+@Table(name = "trades")
 @Data
 @NoArgsConstructor
-public class Position {
+public class Trade {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -27,18 +27,20 @@ public class Position {
     @Column(nullable = false, precision = 15, scale = 8)
     private BigDecimal quantity;
 
-    @Column(name = "average_price", nullable = false, precision = 15, scale = 8)
-    private BigDecimal averagePrice;
+    @Column(nullable = false, precision = 15, scale = 8)
+    private BigDecimal price;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private TradeType type;
 
     @Column(name = "asset_type")
     private String assetType; // "acao" ou "fii"
 
-    @Column(name = "current_price", precision = 15, scale = 8)
-    private BigDecimal currentPrice;
+    @Column(name = "executed_at")
+    private LocalDateTime executedAt = LocalDateTime.now();
 
-    @Column(name = "created_at")
-    private LocalDateTime createdAt = LocalDateTime.now();
-
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt = LocalDateTime.now();
+    public enum TradeType {
+        BUY, SELL
+    }
 }

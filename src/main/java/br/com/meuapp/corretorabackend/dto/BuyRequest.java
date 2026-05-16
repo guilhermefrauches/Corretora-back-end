@@ -13,6 +13,9 @@ public class BuyRequest {
     @NotBlank
     private String ticker;
 
+    @NotBlank
+    private String assetType; // "acao" ou "fii"
+
     @NotNull
     @DecimalMin("0.01")
     private BigDecimal quantity;
