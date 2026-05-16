@@ -5,5 +5,10 @@ import java.util.List;
 
 public record PortfolioResponse(
         List<PositionResponse> positions,
-        BigDecimal totalValue
-) {}
+        BigDecimal totalValue,
+        BigDecimal allTimeReturnBRL,
+        BigDecimal allTimeReturnPct,
+        Wallet wallet
+) {
+    public record Wallet(BigDecimal balance) {}
+}

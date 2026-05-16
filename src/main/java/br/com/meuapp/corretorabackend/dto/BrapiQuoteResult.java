@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -22,4 +23,5 @@ public class BrapiQuoteResult {
     private BigDecimal regularMarketPreviousClose;
     private Long marketCap;
     private String currency;
+    private List<HistoricalDataPrice> historicalDataPrice;
 }
