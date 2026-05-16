@@ -18,8 +18,8 @@ public class BrapiConfig {
     @Bean
     public RestTemplate brapiRestTemplate() {
         SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
-        factory.setConnectTimeout(10_000);
-        factory.setReadTimeout(10_000);
+        factory.setConnectTimeout(3_000);
+        factory.setReadTimeout(3_000);
         return new RestTemplate(factory);
     }
 
